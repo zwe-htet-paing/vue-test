@@ -7,8 +7,16 @@
       v-model="newTodo"
       @keyup.enter="addTodo"
     />
-    <div v-for="(todo, index) in todosFiltered" :key="todo.id" class="todo-item">
-      <div class="todo-item-left">
+    <todo-item
+      v-for="todo in todosFiltered"
+      :key="todo.id"
+      :todo="todo"
+      :index="index"
+      :checkAll = "!anyRemaining"
+      @removedTodo = "removeTodo"
+      @finishedEdit = "finishedEdit"
+    >
+      <!-- <div class="todo-item-left">
         <input type="checkbox" v-model="todo.completed" />
         <div
           v-if="!todo.editing"
@@ -31,19 +39,18 @@
       </div>
       <div class="remove-item" @click="removeTodo(index)">
         &times;
-      </div>
-    </div>
+      </div> -->
+    </todo-item>
 
     <div class="extra-container">
       <div>
         <label
           ><input
             type="checkbox"
-            :checked="!anyRemaining"
+            :checked ="!anyRemaining"
             @change="checkAllTodos"
           />
-          Check All</label
-        >
+          Check All</label>
       </div>
       <div>{{ remaining }} items left</div>
     </div>
@@ -68,7 +75,9 @@
       </div>
       <div>
         <transition name="fade">
-        <button v-if="showClearCompletedButton" @click="clearCompleted">Clear Completed</button>
+          <button v-if="showClearCompletedButton" @click="clearCompleted">
+            Clear Completed
+          </button>
         </transition>
       </div>
     </div>
@@ -76,24 +85,29 @@
 </template>
 
 <script>
+import TodoItem from "./TodoItem";
+
 export default {
   name: "todo-list",
+  components: {
+    TodoItem
+  },
   data() {
     return {
       newTodo: "",
       idForTodo: 3,
       beforeEditCache: "",
-      filter: 'all',
+      filter: "all",
       todos: [
         {
           id: 1,
-          title: "hello ",
+          title: "Hello ",
           completed: false,
           editing: false
         },
         {
           id: 2,
-          title: "hello hello ",
+          title: "Welcome! ",
           completed: false,
           editing: false
         }
@@ -108,28 +122,21 @@ export default {
       return this.remaining != 0;
     },
     todosFiltered() {
-      if (this.filter == 'all') {
-        return this.todos
-      } else if (this.filter == 'active') {
-        return this.todos.filter(todo => !todo.completed)
-      } else if (this.filter == 'completed') {
-        return this.todos.filter(todo => todo.completed)
+      if (this.filter == "all") {
+        return this.todos;
+      } else if (this.filter == "active") {
+        return this.todos.filter(todo => !todo.completed);
+      } else if (this.filter == "completed") {
+        return this.todos.filter(todo => todo.completed);
       }
-      return this.todos
+      return this.todos;
     },
     showClearCompletedButton() {
-      return this.todos.filter(todo => todo.completed).length > 0
-    },
-    
-  },
-
-  directives: {
-    focus: {
-      inserted: function(el) {
-        el.focus();
-      }
+      return this.todos.filter(todo => todo.completed).length > 0;
     }
   },
+
+  
   methods: {
     addTodo() {
       if (this.newTodo.trim().length == 0) {
@@ -144,28 +151,32 @@ export default {
       this.newTodo = "";
       this.idForTodo++;
     },
-    editTodo(todo) {
-      this.beforeEditCache = todo.title;
-      todo.editing = true;
-    },
-    doneEdit(todo) {
-      if (todo.title.trim() == "") {
-        todo.title = this.beforeEditCache;
-      }
-      todo.editing = false;
-    },
-    cancelEdit(todo) {
-      todo.title = this.beforeEditCache;
-      todo.editing = false;
-    },
+    // editTodo(todo) {
+    //   this.beforeEditCache = todo.title;
+    //   todo.editing = true;
+    // },
+    // doneEdit(todo) {
+    //   if (todo.title.trim() == "") {
+    //     todo.title = this.beforeEditCache;
+    //   }
+    //   todo.editing = false;
+    // },
+    // cancelEdit(todo) {
+    //   todo.title = this.beforeEditCache;
+    //   todo.editing = false;
+    // },
     removeTodo(index) {
-      this.todos.splice(index, 1);
+      //const index = this.todos.findIndex((item) => item.id == id)
+      this.todos.splice(index, 1);  
     },
     checkAllTodos() {
-      this.todos.forEach(todo => (todo.completed = event.target.checked));
+      this.todos.forEach((todo) => todo.completed = event.target.checked)
     },
     clearCompleted() {
-      this.todos = this.todos.filter(todo => !todo.completed)
+      this.todos = this.todos.filter(todo => !todo.completed);
+    },
+    finishedEdit(data){
+      this.todos.splice(data.index, 1, data.todo)
     }
   }
 };
